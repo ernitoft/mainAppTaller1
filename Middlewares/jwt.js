@@ -1,15 +1,15 @@
 const jwt = require('jsonwebtoken');
 
 /**
- * Obtiene el email del usuario a partir del token JWT.
+ * Obtiene el uuid del usuario a partir del token JWT.
  * @param {string} token - El token JWT.
  * @returns {string} El ID del usuario.
  */
 const getIdJWT = (token) =>{
     const secret = process.env.SECRET;
-    const {email} = jwt.verify(token, secret);
+    const {uuid, email} = jwt.verify(token, secret);
 
-    return email;
+    return uuid;
 }
  
 /**
@@ -17,9 +17,9 @@ const getIdJWT = (token) =>{
  * @param {string} email - El email del usuario.
  * @returns {Promise<string>} El token JWT generado.
  */
-const generateToken = (email = '') => {
+const generateToken = (email = '', uuid = '') => {
     return new Promise (( resolve, reject ) => {
-        const payload = {email};
+        const payload = {email, uuid};
         jwt.sign(payload, process.env.SECRET,{expiresIn: '10h'}, (error, token) => {
             if (error) {
                 reject('No se pudo generar el token: ', error);

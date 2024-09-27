@@ -29,7 +29,7 @@ const login = async (req, res) => {
             });
         }
         
-        const token = await generateToken(user.email);
+        const token = await generateToken(user.email, user.uuid);
 
         return res.status(200).json({
             error: false,
