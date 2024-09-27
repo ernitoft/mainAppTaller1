@@ -1,4 +1,3 @@
-const bcrypt = require('bcrypt');
 const {generateToken} = require('../Middlewares/jwt.js');
 const jwt = require('jsonwebtoken');
 const { default: axios } = require('axios');
