@@ -41,6 +41,8 @@ const Assign = async (req, res) => {
             const successResponses = [];
         
             for (const response of responses) {
+
+                console.log('response', response);
                 if (response.error) {
                     errorResponses.push(response);
                 } else {
@@ -49,9 +51,7 @@ const Assign = async (req, res) => {
                         success: true,
                         message: response.message || 'La calificación se ha asignado correctamente.',
                         grade: {
-                            status: response.grade.status,
-                            statusText: response.grade.statusText,
-                            data: response.grade.data // Solo extrae los datos relevantes
+                            response,
                         }
                     });
                 }
