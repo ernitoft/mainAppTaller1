@@ -3,6 +3,6 @@ const router = Router();
 
 const { Assign } = require('../Controllers/gradesController');
 
-router.post('/assign',Assign);
+router.post('/assign', Assign);
 
 module.exports = router;

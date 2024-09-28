@@ -11,6 +11,8 @@ const createStudent = async (req, res) => {
                 message: 'Faltan datos',
             });
         }
+
+        //Users service
         const createResponse = await axios.post('https://codelsoft-user-service.onrender.com/api/student', {
             firstname,
             lastname,
@@ -30,7 +32,23 @@ const createStudent = async (req, res) => {
                 message: 'Error al crear estudiante',
             });
         }
- 
+        
+        //Search service
+        const searchResponse = await axios.post('codelsoft-search-service.onrender.com/api/auth/register', {
+            'name': firstname,
+            lastname,
+            email,
+            'password': firstname,
+            'phone': '+123456789',
+            'roleName': 'STUDENT'
+        });
+
+        if (searchResponse.status == 409){
+            return res.status(400).json({
+                error: true,
+                message: searchResponse.message,
+            });
+        }
 
         return res.status(200).json({
             error: false,

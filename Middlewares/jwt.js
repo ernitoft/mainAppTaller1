@@ -5,26 +5,33 @@ const jwt = require('jsonwebtoken');
  * @param {string} token - El token JWT.
  * @returns {string} El ID del usuario.
  */
-const getIdJWT = (token) =>{
+const getIdJWT = (token) => {
     const secret = process.env.SECRET;
-    const {uuid, email} = jwt.verify(token, secret);
+    const { uuid, email } = jwt.verify(token, secret);
+
+    console.log('uuid', uuid);
 
     return uuid;
 }
- 
+
 /**
  * Genera un nuevo token JWT para el usuario.
  * @param {string} email - El email del usuario.
  * @returns {Promise<string>} El token JWT generado.
  */
 const generateToken = (email = '', uuid = '') => {
-    return new Promise (( resolve, reject ) => {
-        const payload = {email, uuid};
-        jwt.sign(payload, process.env.SECRET,{expiresIn: '10h'}, (error, token) => {
+    return new Promise((resolve, reject) => {
+        const payload = { email, uuid };
+
+        jwt.sign(payload, process.env.SECRET, { expiresIn: '10h' }, (error, token) => {
             if (error) {
                 reject('No se pudo generar el token: ', error);
             }
-            else resolve(token);
+            else {
+
+                resolve(token);
+
+            }
         });
     });
 }
@@ -40,7 +47,7 @@ const validateJWT = async (req, res, next) => {
     try {
         const header = req.headers['authorization'];
         const token = header && header.split(' ')[1];
-        
+
         if (!token) {
             return res.status(401).json({
                 error: true,
@@ -88,4 +95,4 @@ const validateJWT = async (req, res, next) => {
 
 
 
-module.exports = {validateJWT,getIdJWT, generateToken};
+module.exports = { validateJWT, getIdJWT, generateToken };
