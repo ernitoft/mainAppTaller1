@@ -1,9 +1,19 @@
-const axios = require('axios');
+const { default: axios } = require("axios");
 
-const listSearchByGrade = (req, res) => {
+const listSearchByGrade = async (req, res) => {
+    const Excellent = [];
+    const Good = [];
+    const Regular = [];
+    const Bad = [];
+    
     try{
-        
-        
+
+        const studentsByRange = await axios.get('https://codelsoft-search-service.onrender.com/api/search/',
+            {params: {
+                grade: gradeIterator
+            }},
+        )
+
 
     }catch(error){
         console.log('Error al listar búsqueda por grado: ', error);
