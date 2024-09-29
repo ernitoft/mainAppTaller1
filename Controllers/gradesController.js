@@ -185,12 +185,11 @@ const sendIndividualGrade = async (grades, userId) => {
 const verifyUserExist = async (studentId) => {
     try{
         const response = await axios.get('https://codelsoft-user-service.onrender.com/api/student');
-        const user = response.data.find(user => user.uuid === studentId);
-        if (!user){
-            return false;
-        }
-        return true;
+        const users = response.data;
 
+        const user = users.find(user => user.uuid === studentId);
+        return !!user;
+        
     } catch (error) {
         console.log('Error al verificar el usuario: ', error.message);
         return false;
