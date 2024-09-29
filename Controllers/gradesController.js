@@ -30,6 +30,8 @@ const Assign = async (req, res) => {
         // Si es un array, procesar múltiples calificaciones
         if (Array.isArray(data)) {
             const responses = await sendIndividualGrade(data, userId, studentId);
+        
+
             if (responses.length === 0) {
                 return res.status(400).json({
                     error: true,
@@ -42,7 +44,6 @@ const Assign = async (req, res) => {
         
             for (const response of responses) {
 
-                console.log('response', response);
                 if (response.error) {
                     errorResponses.push(response);
                 } else {
@@ -156,6 +157,18 @@ const sendIndividualGrade = async (grades, userId) => {
                 studentId: grade.studentId,
             });
 
+            const {_id} = await getUser(grade.studentId);
+
+            const responseSearch = await axios.post('https://codelsoft-search-service.onrender.com/api/grades/create', {
+                subjectName: grade.subjectName,
+                grade: grade.grade,
+                gradeName: grade.gradeName,
+                comment: grade.comment,
+                userId: userId,
+                studentId: _id,
+            });
+
+
             if (response.status !== 201) {
                 ResponsesList.push({
                     error: true,
@@ -189,11 +202,29 @@ const verifyUserExist = async (studentId) => {
 
         const user = users.find(user => user.uuid === studentId);
         return !!user;
-        
+
     } catch (error) {
         console.log('Error al verificar el usuario: ', error.message);
         return false;
     }
 };
+
+const getUser = async (studentId) => {
+    try {
+        const response = await axios.get('https://codelsoft-user-service.onrender.com/api/student');
+        const users = response.data;
+        const user = users.find(user => user.uuid === studentId);
+        const responseSearch = await axios.get('https://codelsoft-search-service.onrender.com/api/users/all');
+        for (const userr of responseSearch.data.data){
+            if(user.email === userr.email){
+                return userr;
+            }
+        }
+
+    } catch (error) {
+        console.log('Error al obtener el usuario: ', error.message);
+        return null;
+    }
+}
 
 module.exports = { Assign };

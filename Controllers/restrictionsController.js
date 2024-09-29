@@ -89,14 +89,16 @@ const applyRestrictions = async (studentIdsArray, reason) => {
 
             console.log('Response: ', response.data);
 
+            const {_id} = await getUser(studentId);
+
+            const sync = await axios.post('https://codelsoft-search-service.onrender.com/api/restrictions/create',{
+                studentId:_id,
+                reason
+            });
+
+            console.log (response);
             // Verificar si la respuesta fue exitosa y agregar al ResponsesList
-            if (response.data.error == false) {
-
-                await axios.post('https://codelsoft-search-service.onrender.com/api/restrictions/create',{
-                    studentId,
-                    reason
-                })
-
+            if (response.status == 200) {
                 ResponsesList.push(response.data);
                 
             } else {
@@ -124,5 +126,26 @@ const verifyUserExist = async (studentId) => {
         return false;
     }
 };
+
+const getUser = async (studentId) => {
+    try {
+        const response = await axios.get('https://codelsoft-user-service.onrender.com/api/student');
+        const users = response.data;
+        const user = users.find(user => user.uuid === studentId);
+        const responseSearch = await axios.get('https://codelsoft-search-service.onrender.com/api/users/all');
+
+        for (const userr of responseSearch.data.data){
+            if(user.email === userr.email){
+                console.log('userr: ', userr);
+                return userr;
+            }
+        }
+
+
+    } catch (error) {
+        console.log('Error al obtener el usuario: ', error.message);
+        return null;
+    }
+}
 
 module.exports = { createRestrictions };

@@ -9,8 +9,6 @@ const getIdJWT = (token) => {
     const secret = process.env.SECRET;
     const { uuid, email } = jwt.verify(token, secret);
 
-    console.log('uuid', uuid);
-
     return uuid;
 }
 
