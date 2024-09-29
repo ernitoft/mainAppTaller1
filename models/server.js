@@ -20,6 +20,7 @@ class Server {
             users: '/api/users',
             restrictions: '/api/restrictions',
             search: '/api/search',
+            home: '/',
         }
 
         // Middlewares
@@ -33,6 +34,7 @@ class Server {
     // Método para configurar las rutas
     routes(){
         this.app.use(this.paths.auth, require('../Routes/authRoutes'));
+        this.app.use(this.paths.home, require('../Routes/homeRoutes'));
         this.app.use(this.paths.grades, (req, res, next) => validateJWT(req, res, next), require('../Routes/gradesRoutes'));
         this.app.use(this.paths.users, (req, res, next) => validateJWT(req, res, next),require('../Routes/usersRoutes'));
         this.app.use(this.paths.restrictions, (req, res, next) => validateJWT(req, res, next),require('../Routes/restrictionsRoutes'));
