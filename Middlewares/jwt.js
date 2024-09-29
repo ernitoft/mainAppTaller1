@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+const { default: axios } = require("axios");
 
 /**
  * Obtiene el uuid del usuario a partir del token JWT.
