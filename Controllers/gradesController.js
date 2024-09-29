@@ -10,13 +10,6 @@ const Assign = async (req, res) => {
         const header = req.headers['authorization'];
         const token = header && header.split(' ')[1];
 
-        if (!token) {
-            return res.status(401).json({
-                error: true,
-                message: 'Token de autenticación no proporcionado.',
-            });
-        }
-
         const userId = getIdJWT(token);
 
         if (!userId) {
@@ -25,7 +18,7 @@ const Assign = async (req, res) => {
                 message: 'Token de autenticación inválido o no proporcionado.'
             });
         }
-
+  
 
         // Si es un array, procesar múltiples calificaciones
         if (Array.isArray(data)) {
@@ -75,6 +68,18 @@ const Assign = async (req, res) => {
                 });
             }
 
+            console.log('studentId individual: ', studentId);
+            const isRestrictions = await axios.get('https://api-restrictions.onrender.com/restrictions/student/'+studentId);
+            console.log('isRestrictions individual: ', isRestrictions.data);
+    
+            if (isRestrictions.data) {
+                return res.status(400).json({
+                    error: true,
+                    message: 'El estudiante tiene restricciones.',
+                });
+            }
+    
+
             // Hacer la solicitud para asignar la calificación
             const response = await axios.post('https://codelsoft-grades-service.onrender.com/grades', {
                 subjectName,
@@ -107,6 +112,8 @@ const Assign = async (req, res) => {
                     message: data.message || 'Conflicto: la calificación ya existe.',
                 });
             }
+
+            console.log('Error: ', error);
             return res.status(status).json({
                 error: true,
                 message: data.message || 'Error en la asignación de la calificación.',
@@ -146,8 +153,18 @@ const sendIndividualGrade = async (grades, userId) => {
             });
             continue;
         }
-
         try {
+            const isRestrictions = await axios.get('https://api-restrictions.onrender.com/restrictions/student/'+grade.studentId);
+
+            if (Array.isArray(isRestrictions.data) && isRestrictions.data.length > 0) {
+                ResponsesList.push({
+                    error: true,
+                    message: 'Error al asignar la calificación, el estudiante tiene restricciones.',
+                    gradeWithError: grade,
+                });
+                continue;
+            }
+
             const response = await axios.post('https://codelsoft-grades-service.onrender.com/grades', {
                 subjectName: grade.subjectName,
                 grade: grade.grade,
