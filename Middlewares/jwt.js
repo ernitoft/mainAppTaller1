@@ -62,16 +62,14 @@ const validateJWT = async (req, res, next) => {
             });
         }
 
-        //TODO: validar que el usuario exista en la base de datos de users
+        const user = getUser(email);
 
-        // const user = await Users.findByPk(id);
-
-        // if (!user) {
-        //     return res.status(401).json({
-        //         error: true,
-        //         msg: 'Token inválido, usuario no encontrado'
-        //     });
-        // }
+        if (!user) {
+             return res.status(401).json({
+                 error: true,
+                 msg: 'Token inválido, usuario no encontrado'
+            });
+        }
 
         req.user = user;
 
@@ -89,6 +87,23 @@ const validateJWT = async (req, res, next) => {
         });
     }
 };
+
+const getUser = async (email) => {
+    try {
+        const response = await axios.get('https://codelsoft-user-service.onrender.com/api/teaching');
+        const users = response.data;
+        const user = users.find(user => user.email === email);
+
+        if (!user) {
+            return null;
+        }
+        return user;
+
+    } catch (error) {
+        console.log('Error al obtener el usuario: ', error.message);
+        return null;
+    }
+}
 
 
 

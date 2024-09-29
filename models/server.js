@@ -3,6 +3,7 @@ express = require('express');
 const crypto = require('crypto');
 const cors = require('cors');
 const logger = require('morgan');
+const {validateJWT} = require('../Middlewares/jwt');
 
 class Server {
     constructor() {
@@ -32,10 +33,10 @@ class Server {
     // Método para configurar las rutas
     routes(){
         this.app.use(this.paths.auth, require('../Routes/authRoutes'));
-        this.app.use(this.paths.grades, require('../Routes/gradesRoutes'));
-        this.app.use(this.paths.users, require('../Routes/usersRoutes'));
-        this.app.use(this.paths.restrictions, require('../Routes/restrictionsRoutes'));
-        this.app.use(this.paths.search, require('../Routes/searchRoutes'));
+        this.app.use(this.paths.grades, (req, res, next) => validateJWT(req, res, next), require('../Routes/gradesRoutes'));
+        this.app.use(this.paths.users, (req, res, next) => validateJWT(req, res, next),require('../Routes/usersRoutes'));
+        this.app.use(this.paths.restrictions, (req, res, next) => validateJWT(req, res, next),require('../Routes/restrictionsRoutes'));
+        this.app.use(this.paths.search, (req, res, next) => validateJWT(req, res, next),require('../Routes/searchRoutes'));
     }
 
     // Método para configurar los middlewares
