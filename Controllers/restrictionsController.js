@@ -1,5 +1,6 @@
 const axios = require('axios');
 const { getIdJWT } = require('../Middlewares/jwt.js');
+const { query } = require('express');
 
 const createRestrictions = async (req, res) => {
     try {
@@ -70,10 +71,55 @@ const createRestrictions = async (req, res) => {
 
 const deleteRestrictions = async (req, res) => {
     try{
-        const { idRestriction } = req.body;
+        const { idRestriction, reason} = req.body;
+        console.log('idRestriction: ', idRestriction);
+        console.log('reason: ', reason);
 
-        const response = await axios.delete(`https://api-restrictions.onrender.com/restrictions/delete/${idRestriction}`);
-        console.log('Response: ', response.data);
+        if (!idRestriction && !reason) {
+            return res.status(400).json({
+                error: true,
+                message: 'Faltan datos: idRestriction y reason.',
+            });
+        } else if (idRestriction && reason) {
+            return res.status(400).json({
+                error: true,
+                message: 'Solo se puede eliminar por ID o por motivo [Una de las dos en blanco].',
+            });
+        }
+
+        if (!idRestriction) {
+            const deleteByReason = await axios.delete(`https://api-restrictions.onrender.com/restrictions/reason/remove`, {
+                params: { reason: reason }
+            });
+
+            if(deleteByReason.data.error){
+                return res.status(400).json({
+                    error: true,
+                    message: 'Error al eliminar restricción por motivo.',
+                });
+            }
+            return res.status(200).json({
+                error: false,
+                message: 'Restricciones eliminadas por motivo.',
+                response: deleteByReason.data,
+            });
+        } 
+        else{
+            const deleteById = await axios.delete('https://api-restrictions.onrender.com/restrictions/remove/' + idRestriction);
+            if(deleteById.data.error){
+                return res.status(400).json({
+                    error: true,
+                    message: 'Error al eliminar restricción por ID.',
+                    data: deleteById.data,
+                });
+            }
+            return res.status(200).json({
+                error: false,
+                message: 'Restricciones eliminadas por ID.',
+                response: deleteById.data,
+            });
+        }
+        
 
 
     } catch (error) {
@@ -115,18 +161,27 @@ const applyRestrictions = async (studentIdsArray, reason) => {
 
             console.log('Response: ', response.data);
 
-            const {_id} = await getUser(studentId);
+            // Obtener el usuario desde el servicio y verificar si _id existe
+            const user = await getUser(studentId);
+            if (!user || !user._id) {  // Verifica si el usuario existe y tiene _id
+                console.log(user)
+                ResponsesList.push({
+                    error: true,
+                    message: `No se pudo obtener el ID del usuario con id: ${studentId}`,
+                });
+                continue;
+            }
 
-            const sync = await axios.post('https://codelsoft-search-service.onrender.com/api/restrictions/create',{
-                studentId:_id,
-                reason
+            const sync = await axios.post('https://codelsoft-search-service.onrender.com/api/restrictions/create', {
+                studentId: user._id,
+                reason,
             });
 
-            console.log (response);
+            console.log(sync.data);
+
             // Verificar si la respuesta fue exitosa y agregar al ResponsesList
             if (response.status == 200) {
                 ResponsesList.push(response.data);
-                
             } else {
                 ResponsesList.push({
                     error: true,
@@ -140,6 +195,7 @@ const applyRestrictions = async (studentIdsArray, reason) => {
 
     return ResponsesList; // Retornar la lista de respuestas
 };
+
 
 const verifyUserExist = async (studentId) => {
     try {
@@ -160,8 +216,13 @@ const getUser = async (studentId) => {
         const user = users.find(user => user.uuid === studentId);
         const responseSearch = await axios.get('https://codelsoft-search-service.onrender.com/api/users/all');
 
+
         for (const userr of responseSearch.data.data){
+            console.log('userr: ', userr);
+            console.log('user: ', user);
+
             if(user.email === userr.email){
+                console.log('user: ', user);
                 console.log('userr: ', userr);
                 return userr;
             }
