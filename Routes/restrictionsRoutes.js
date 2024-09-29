@@ -1,8 +1,9 @@
 const { Router } = require("express");
 const router = Router();
 
-const { createRestrictions } = require('../Controllers/restrictionsController');
+const { createRestrictions, deleteRestrictions} = require('../Controllers/restrictionsController');
 
 router.post('/createRestriction', createRestrictions);
+router.delete('/deleteRestriction', deleteRestrictions);
 
 module.exports = router;

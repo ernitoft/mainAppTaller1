@@ -68,6 +68,32 @@ const createRestrictions = async (req, res) => {
     }
 };
 
+const deleteRestrictions = async (req, res) => {
+    try{
+        const { idRestriction } = req.body;
+
+        const response = await axios.delete(`https://api-restrictions.onrender.com/restrictions/delete/${idRestriction}`);
+        console.log('Response: ', response.data);
+
+
+    } catch (error) {
+
+        console.log('Error al eliminar restricción: ', error);
+        if (error.response) {
+            const { status, data } = error.response;
+            return res.status(status).json({
+                error: true,
+                message: data.message || 'Error al eliminar la restricción.',
+            });
+        } else {
+            return res.status(500).json({
+                error: true,
+                message: 'Error del servidor: ' + error.message,
+            });
+        }
+    };
+}
+
 const applyRestrictions = async (studentIdsArray, reason) => {
     const ResponsesList = [];
     try {
@@ -148,4 +174,4 @@ const getUser = async (studentId) => {
     }
 }
 
-module.exports = { createRestrictions };
+module.exports = { createRestrictions, deleteRestrictions };
