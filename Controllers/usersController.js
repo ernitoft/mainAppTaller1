@@ -1,74 +1,84 @@
 
 const axios = require('axios');
 
-const createStudent = async (req, res) => {
-    try{
-        const {firstname, lastname, email} = req.body;
 
-        if (!firstname || !lastname || !email){
+const createStudent = async (req, res) => {
+    try {
+        const { name, lastName, email} = req.body;
+
+        // Verificar si faltan datos
+        if (!name || !lastName || !email) {
             return res.status(400).json({
                 error: true,
                 message: 'Faltan datos',
             });
         }
 
-        //Users service
+        // Llamada al servicio de usuarios para crear el estudiante
         const createResponse = await axios.post('https://codelsoft-user-service.onrender.com/api/student', {
-            firstname,
-            lastname,
+            firstname: name, // Ajuste clave para cumplir con la API
+            lastname: lastName,
             email,
         });
 
-        if (createResponse.status == 409){
-            return res.status(400).json({
+        console.log('createResponse: ', createResponse);
+        
+        // Manejo de posibles errores en la creación
+        if (createResponse.status === 409) {
+            return res.status(409).json({
                 error: true,
-                message: createResponse.message,
+                message: createResponse.data.message || 'El estudiante ya existe.',
             });
         }
-        
-        if (createResponse.status !== 201){
+
+        if (createResponse.status !== 201) {
             return res.status(400).json({
                 error: true,
-                message: 'Error al crear estudiante',
+                message: createResponse.data.message || 'Error al crear estudiante.',
             });
         }
-        
-        //Search service
-        const searchResponse = await axios.post('codelsoft-search-service.onrender.com/api/auth/register', {
-            'name': firstname,
-            lastname,
+
+        // Llamada al servicio de búsqueda para crear el estudiante en el sistema de búsqueda
+        const searchResponse = await axios.post('https://codelsoft-search-service.onrender.com/api/users/create', {
+            name, // Ajuste clave para cumplir con la API
+            lastName,
             email,
-            'password': firstname,
-            'phone': '+123456789',
-            'roleName': 'STUDENT'
+            roleName: 'STUDENT',
         });
 
-        if (searchResponse.status == 409){
-            return res.status(400).json({
+        console.log('searchResponse: ', searchResponse);
+
+        // Manejo de posibles errores en el servicio de búsqueda
+        if (searchResponse.status === 409) {
+            return res.status(409).json({
                 error: true,
-                message: searchResponse.message,
+                message: searchResponse.data.message || 'Conflicto: el usuario ya existe en el sistema de búsqueda.',
             });
         }
 
+        if (searchResponse.status !== 201) {
+            return res.status(400).json({
+                error: true,
+                message: searchResponse.data.message || 'Error al registrar el estudiante en el sistema de búsqueda.',
+            });
+        }
+
+        // Respuesta exitosa
         return res.status(200).json({
             error: false,
-            message: 'Estudiante creado',
-            response: createResponse.data
+            message: 'Estudiante creado correctamente.',
+            response: createResponse.data,
         });
 
+    } catch (error) {
+        // Manejo de errores de Axios y otros errores inesperados
+        console.log('Error al crear estudiante: ', error);
 
-    }catch (error) {
         if (error.response) {
             const { status, data } = error.response;
-            if (status === 409) {
-                return res.status(409).json({
-                    error: true,
-                    message: data.message || 'Conflicto: el estudiante ya existe.',
-                });
-            }
             return res.status(status).json({
                 error: true,
-                message: data.message || 'Error en la creación del estudiante',
+                message: data.message || 'Error en la creación del estudiante.',
             });
         } else {
             return res.status(500).json({
@@ -78,5 +88,6 @@ const createStudent = async (req, res) => {
         }
     }
 };
+
 
 module.exports = {createStudent}

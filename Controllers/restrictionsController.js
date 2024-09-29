@@ -91,6 +91,12 @@ const applyRestrictions = async (studentIdsArray, reason) => {
 
             // Verificar si la respuesta fue exitosa y agregar al ResponsesList
             if (response.data.error == false) {
+
+                await axios.post('https://codelsoft-search-service.onrender.com/api/restrictions/create',{
+                    studentId,
+                    reason
+                })
+
                 ResponsesList.push(response.data);
                 
             } else {
